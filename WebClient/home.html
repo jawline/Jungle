@@ -1,8 +1,8 @@
 <html>
 	<head>
-		
+
 		<title>Jungle Framework</title>
-		
+
 		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
 		<script type="text/javascript" src="jquery.json-2.4.min.js"></script>
 		<script type="text/javascript" src="easeljs.js"></script>
@@ -19,11 +19,13 @@
 			var canvas;
 			var shadeContainer;
 			var jungle;
+			var host;
 
 			function appendLog(tag, msg) {
 				console.log(tag + ": " + msg);
 				log[0].value += tag + ": " + msg + "\n";
 			}
+
 			function resizeCanvas() {
 
 				canvas.width = window.innerWidth;
@@ -35,9 +37,10 @@
 			function login() {
 
 				shadeContainer.fadeOut(function() {
+
 					appendLog("Main", "Initializing jungle");
 
-					if (jungle.Login(new JungleNetConnectionDetails($("#email").val(), keccak($("#password").val()), "ws://localhost:12560/ws")) == false) {
+					if (jungle.Login(new JungleNetConnectionDetails($("#email").val(), keccak($("#password").val()), host)) == false) {
 					}
 
 					appendLog("Main", "Started...");
@@ -62,6 +65,7 @@
 				logHideButton = $("#loghide");
 				log[0].readOnly = true;
 				shadeContainer = $("#shade-container");
+				host = 'ws://' + document.location.hostname + ":12560/ws";
 
 				createjs.Bitmap.prototype.setWidth = function(w) {
 					if (this.image.width == 0)
@@ -201,7 +205,7 @@
 						<input id="password" type="password" style="height: 2em; width: 30em;" name="userpassword"/>
 						<br/>
 						<br/>
-						<input type="submit" style="width: 20em;"/>
+						<input type="submit" value="Login" style="width: 20em;"/>
 					</form>
 				</div>
 			</div>

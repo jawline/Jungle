@@ -36,7 +36,7 @@ function Jungle(canvas, logFunction, failFunction) {
 Jungle.prototype.Login = function(details) {
 
 	if (this.net == null) {
-		this.log("Jungle", "Attempting login");
+		this.log("Jungle", "Attempting login to " + details.Address);
 		this.net = new JungleNet(details, this);
 		return true;
 	}
