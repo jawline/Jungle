@@ -15,7 +15,7 @@ function JungleNet(details, callbacks) {
 	this.loggedIn = false;
 
 	//Open a new socket
-        this.socket = new WebSocket(details.Address);
+	this.socket = new WebSocket(details.Address);
 
 	//Store a reference to this so the callbacks can work
 	var thisReference = this;
@@ -24,17 +24,14 @@ function JungleNet(details, callbacks) {
 	this.socket.onopen = function(evt) {
 		thisReference.onConnect(evt);
 	}
-
 	//Route all messages to the right place
 	this.socket.onmessage = function(evt) {
 		thisReference.onMessage(evt);
 	}
-
 	//Set the close listener
 	this.socket.onclose = function(evt) {
 		thisReference.onClose(evt.reason);
 	}
-
 }
 
 /**
@@ -45,7 +42,6 @@ JungleNet.prototype.Send = function(object) {
 	var encoded = $.toJSON(object);
 	this.socket.send(encoded);
 }
-
 /**
  * Function to process every message received
  */
@@ -58,14 +54,12 @@ JungleNet.prototype.onMessage = function(evt) {
 
 	if (incoming.Command == "Disconnect") {
 
+		//Release the socket
+		this.Release();
+
 		//Call the onClose function with the reason given by the message
 		this.onClose(incoming.Data);
 
-		//Remove the socket onclose function so that onClose doesn't get called twice
-		this.socket.onclose = null;
-
-		//And finally close the connection
-		this.socket.close();
 	} else {
 
 		this.callbacks.data(incoming);
@@ -74,7 +68,6 @@ JungleNet.prototype.onMessage = function(evt) {
 }
 
 JungleNet.prototype.onConnect = function(evt) {
-	console.log("Connected");
 
 	var loginRequest = new Object();
 
@@ -84,7 +77,6 @@ JungleNet.prototype.onConnect = function(evt) {
 	this.Send(loginRequest);
 
 	var chatMessage = new Object();
-	
 
 	chatMessage.Command = "Chat";
 	chatMessage.Data = "BOOM CHICA";
@@ -93,12 +85,29 @@ JungleNet.prototype.onConnect = function(evt) {
 
 	this.callbacks.connected();
 }
-
+/**
+ * onClose binding. Called when the connection has been closed
+ */
 JungleNet.prototype.onClose = function(reason) {
-	console.log("Closed");
+
+	if (reason == null || reason.length == 0) {
+		reason = "Unknown";
+	}
+
 	this.callbacks.failure(reason);
 }
 
+JungleNet.prototype.Release = function() {
+
+	if (this.socket != null) {
+		this.socket.onopen = null;
+		this.socket.onclose = null;
+		this.socket.onmessage = null;
+		this.socket.close();
+		this.socket = null;
+	}
+
+}
 /**
  * Connection details, stores username password and address
  */

@@ -1,0 +1,193 @@
+/**
+ * The Jungle is the master container for the Jungle framework
+ * @author Blake Loring
+ */
+
+function Jungle(canvas, logFunction, failFunction) {
+
+	var parent = this;
+
+	//Setup the fail function (Called if the connection fails)
+	this.fail = failFunction;
+
+	//Setup the log function
+	this.log = logFunction;
+	this.log("Jungle", "Creating JungleNet");
+
+	this.net = null;
+
+	this.log("Jungle", "Initializing stage");
+	this.stage = new createjs.Stage(canvas);
+	this.stage.mouseEventsEnabled = true;
+
+	this.setupVisual();
+	this.setupControls();
+
+	//Make sure this objects tick function is run repeatedly
+	createjs.Ticker.addListener(this);
+	createjs.Ticker.useRAF = true;
+
+	//Target is 60FPS
+	createjs.Ticker.setFPS(60);
+}
+
+Jungle.prototype.Login = function(details) {
+
+	if (this.net == null) {
+		this.log("Jungle", "Attempting login");
+		this.net = new JungleNet(details, this);
+		return true;
+	}
+
+	this.log("Jungle", "Cannot login, already logged");
+	return false;
+}
+
+/**
+ * Setup the visual elements of the system
+ */
+
+Jungle.prototype.setupVisual = function() {
+	this.setupUi();
+}
+
+/**
+ * Function sets up the mouse listeners
+ */
+Jungle.prototype.setupControls = function() {
+	var parent = this;
+
+	var lastX = 0.0;
+	var lastY = 0.0;
+	var mouseDown = false;
+
+	this.stage.onMouseDown = function(evt) {
+
+		lastX = evt.stageX;
+		lastY = evt.stageY;
+
+		mouseDown = true;
+	}
+
+	this.stage.onMouseUp = function(evt) {
+
+		lastX = evt.stageX;
+		lastY = evt.stageY;
+
+		mouseDown = false;
+	}
+
+	this.stage.onMouseMove = function(evt) {
+
+		if (mouseDown) {
+
+			parent.map.container.x += evt.stageX - lastX;
+			parent.map.container.y += evt.stageY - lastY;
+
+		}
+
+		lastX = evt.stageX;
+		lastY = evt.stageY;
+
+	}
+}
+/**
+ * Function sets up the map container
+ */
+Jungle.prototype.setupMap = function() {
+
+	//Create a reference to this for use in sub functions
+	var parent = this;
+	
+	this.clearMap();
+
+	var tileset = new Image();
+	tileset.src = "dirt.jpg";
+	tileset.onload = function() {
+		parent.map = new JungleMap(10, 11, tileset);
+		parent.mapContainer.addChild(parent.map.container);
+	}
+}
+
+Jungle.prototype.clearMap = function() {
+	this.map = null;
+	this.mapContainer.removeAllChildren();
+}
+
+/**
+ * Function sets up the UI
+ */
+Jungle.prototype.setupUi = function() {
+
+	/**
+	 * Create the UI container
+	 */
+	this.uiContainer = new createjs.Container();
+
+	//Create the status message (Top left)
+	this.status = new createjs.Text();
+	this.status.text = "Unconnected";
+
+	this.uiContainer.addChild(this.status);
+
+	/**
+	 * Add the UI container to the stage
+	 */
+
+	this.stage.addChild(this.uiContainer);
+}
+/**
+ * On connection JungleNet callback
+ */
+Jungle.prototype.connected = function() {
+	this.log("Jungle", "Connected");
+	this.status.text = "Connected";
+	this.setupMap();
+}
+/**
+ * On failure JungleNet callback
+ */
+
+Jungle.prototype.failure = function(reason) {
+
+	//Get rid of net
+	this.net.Release();
+	this.net = null;
+	
+	//Clear the map
+	this.clearMap();
+
+	this.log("Jungle", "Connection failure " + reason);
+	this.status.text = "Closed: " + reason;
+	this.fail(reason);
+}
+/**
+ * On data JungleNet callback
+ */
+
+Jungle.prototype.data = function(data) {
+
+	this.log("Jungle", "Received Packet " + data);
+
+	//If it is a chat message print it to the log
+	if (data.Command == "Chat") {
+
+		this.log("Chat", data.Data);
+
+	}
+}
+/**
+ * Frame redraw function
+ */
+Jungle.prototype.Draw = function() {
+
+	//Redraw the canvas
+	this.stage.update();
+
+}
+/**
+ * Frame tick function
+ */
+Jungle.prototype.tick = function() {
+	this.Draw();
+}

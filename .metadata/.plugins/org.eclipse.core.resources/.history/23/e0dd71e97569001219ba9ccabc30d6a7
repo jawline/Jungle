@@ -1,0 +1,18 @@
+function JungleSound() {
+
+	if (!buzz.isSupported()) {
+		throw "No Audio Support";
+	}
+
+	this.background = null;
+}
+
+JungleSound.prototype.setBackground = function(path) {
+	
+	this.background = new buzz.sound(path, {
+		formats : ["mp3", "ogg"],
+		preload : true,
+		autoplay : true,
+		loop : true
+	});
+}

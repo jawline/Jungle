@@ -1,0 +1,7 @@
+function JungleSound() {
+	this.background = null;	
+}
+
+JungleSound.prototype.setBackground = function() {
+	
+}

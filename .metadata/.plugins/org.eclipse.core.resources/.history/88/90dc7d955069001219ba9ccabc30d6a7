@@ -1,0 +1,205 @@
+<html>
+	<head>
+		<title>Jungle Framework</title>
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+		<script type="text/javascript" src="jquery.json-2.4.min.js"></script>
+		<script type="text/javascript" src="easeljs.js"></script>
+		<script type="text/javascript" src="soundjs.js"></script>
+		<script type="text/javascript" src="keccak.js"></script>
+		<script type="text/javascript" src="junglemap.js"></script>
+		<script type="text/javascript" src="junglenet.js"></script>
+		<script type="text/javascript" src="jungle.js"></script>
+		<script type="text/javascript">
+			var logContainer;
+			var log;
+			var logHideButton;
+			var canvas;
+			var shadeContainer;
+			var jungle;
+
+			function appendLog(tag, msg) {
+				log[0].value += tag + ": " + msg + "\n";
+			}
+
+			function resizeCanvas() {
+
+				canvas.width = window.innerWidth;
+				canvas.height = window.innerHeight;
+
+				appendLog("Main", "Resized to " + canvas.width + "," + canvas.height);
+			}
+
+			function login() {
+
+				appendLog("Main", "Initializing jungle");
+				jungle = new Jungle(new JungleNetConnectionDetails("blake_l@imclueless.co.uk", keccak("Thed@rknesswithin161"), "ws://localhost:12560/ws"), canvas, appendLog);
+				appendLog("Main", "Started...");
+				shadeContainer.fadeOut();
+				
+			}
+			
+			function reset() {
+				jungle = null;
+				
+				shadeContainer.fadeIn();
+				
+			}
+
+			$(function() {
+
+				canvas = $("#mcanvas")[0];
+				logContainer = $("#log-container");
+				log = $("#log");
+				logHideButton = $("#loghide");
+				log[0].readOnly = true;
+				shadeContainer = $("#shade-container");
+
+				createjs.Bitmap.prototype.setWidth = function(w) {
+					if (this.image.width == 0)
+						return;
+
+					this.scaleX = w / this.image.width;
+				}
+
+				createjs.Bitmap.prototype.setHeight = function(h) {
+					if (this.image.height == 0)
+						return;
+
+					this.scaleY = h / this.image.height;
+				}
+
+				log.hide();
+
+				if (!window["WebSocket"]) {
+					alert("WebSocket not supported. Behaviour undefined");
+				}
+
+				//Setup the resize functions
+				$(window).resize(function() {
+					resizeCanvas();
+				});
+
+				resizeCanvas();
+			});
+		</script>
+		<style type="text/css">
+			html {
+				overflow: hidden;
+				width: 100%;
+				height: 100%;
+				margin: 0px;
+			}
+
+			body {
+				overflow: hidden;
+				padding: 0;
+				margin: 0;
+				width: 100%;
+				height: 100%;
+				background: gray;
+			}
+
+			#log-container {
+				background: white;
+				margin: 0.5em;
+				padding: 0.5em;
+				border: solid 1px;
+				position: absolute;
+				bottom: 1px;
+				left: 10px;
+				right: 10px;
+				border-radius: 20px;
+			}
+
+			#log {
+				width: 100%;
+				height: 300px;
+			}
+
+			#form {
+				padding: 0 0.5em 0 0.5em;
+				margin: 0;
+				bottom: 1em;
+				left: 0px;
+				width: 100%;
+				overflow: hidden;
+			}
+
+			#msg {
+				width: 90%;
+			}
+
+			#sub {
+				width: 9%;
+			}
+
+			#canvas-container {
+				width: 100%;
+				height: 100%;
+				z-index: -1;
+			}
+
+			#mcanvas {
+				width: 100%;
+				height: 100%;
+			}
+
+			#shade-container {
+				position: absolute;
+				z-index: 9999;
+				height: 100%;
+				left: 0px;
+				right: 0px;
+				background-color: rgba(0,0,0,0.78);
+			}
+
+			#login-box {
+				position: absolute;
+				height: 10em;
+				top: 4em;
+				left: 1em;
+				right: 1em;
+				background-color: white;
+				-webkit-border-radius: 15px;
+				-moz-border-radius: 15px;
+				border-radius: 15px;
+				border: solid 1px;
+			}
+
+			#form-c {
+				margin-left: auto;
+				margin-right: auto;
+				display: block;
+			}
+
+		</style>
+	</head>
+	<body>
+
+		<div id="shade-container">
+			<div id="login-box">
+				<div id ="form-c" align="center">
+					<br/>
+					<form onsubmit="login(); return false;" style="float-left: auto; float-right: auto;">
+						<input type="email" style="height: 2em; width: 30em;" name="useremail"/>
+						<br/>
+						<br/>
+						<input type="password" style="height: 2em; width: 30em;" name="userpassword"/>
+						<br/>
+						<br/>
+						<input type="submit" style="width: 20em;"/>
+					</form>
+				</div>
+			</div>
+		</div>
+		<div id="canvas-container" align="center">
+			<canvas id="mcanvas"></canvas>
+		</div>
+		<div id="log-container">
+			<button id="loghide" onclick="if (log.is(':hidden')) { logHideButton.html('Hide'); log.fadeIn(); } else { logHideButton.html('Show'); log.fadeOut(); } return false;">
+				Show
+			</button>
+			<textarea id="log"></textarea>
+		</div>
+	</body>
+</html>

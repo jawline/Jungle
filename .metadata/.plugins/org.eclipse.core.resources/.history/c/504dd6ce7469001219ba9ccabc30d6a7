@@ -1,0 +1,14 @@
+function JungleSound() {
+	
+	
+				if (!buzz.isSupported()) {
+					throw "No Audio Support";
+				}
+
+	
+	this.background = null;	
+}
+
+JungleSound.prototype.setBackground = function() {
+	this.background = 
+}

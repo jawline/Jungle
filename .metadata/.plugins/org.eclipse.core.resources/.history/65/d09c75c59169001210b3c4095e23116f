@@ -1,0 +1,56 @@
+function JungleSound() {
+
+	if (!buzz.isSupported()) {
+		throw "No Audio Support";
+	}
+
+	this.backgrounds = new Object();
+	this.currentBackground = null;
+
+	// Preload the sound
+	// auto, metadata, none
+	buzz.defaults.preload = "auto";
+
+	// Play the sound when ready
+	// bool
+	buzz.defaults.autoplay = false;
+
+	// Loop the sound
+	// bool
+	buzz.defaults.loop = false;
+
+	// Duration of a fading effect
+	// milliseconds
+	buzz.defaults.duration = 1000;
+
+	// Audio formats of your files
+	buzz.defaults.formats = ['ogg', 'mp3'];
+}
+
+JungleSound.prototype.setBackground = function(path) {
+
+	//Check that its already playing
+	if (this.currentBackground != null && this.backgrounds[path] == this.currentBackground) {
+		return;
+	}
+
+	for (var x in this.backgrounds) {
+		this.backgrounds[x].fadeOut().stop();
+	}
+
+	console.log("Want " + path);
+
+	if (this.backgrounds[path] == null) {
+
+		var newSound = new buzz.sound([path + ".mp3", path + ".ogg"]);
+		this.backgrounds[path] = newSound;
+	}
+
+	var toPlay = this.backgrounds[path];
+	toPlay.bind("ended", function() {
+		toPlay.load();
+		toPlay.play();
+	});
+
+	toPlay.fadeIn();
+}

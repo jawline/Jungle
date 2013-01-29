@@ -1,0 +1,17 @@
+function JungleSound() {
+	
+	
+				if (!buzz.isSupported()) {
+					
+				}
+
+				if (!buzz.isMP3Supported()) {
+					alert("Your browser doesn't support MP3 Format.");
+				}
+	
+	this.background = null;	
+}
+
+JungleSound.prototype.setBackground = function() {
+	this.background = 
+}

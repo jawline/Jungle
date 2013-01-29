@@ -1,0 +1,129 @@
+<html>
+<head>
+<title>Jungle Framework</title>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+<script type="text/javascript" src="jquery.json-2.4.min.js"></script>
+<script type="text/javascript" src="easeljs.js"></script>
+<script type="text/javascript" src="soundjs.js"></script>
+<script type="text/javascript" src="keccak.js"></script>
+<script type="text/javascript" src="junglemap.js"></script>
+<script type="text/javascript" src="junglenet.js"></script>
+<script type="text/javascript" src="jungle.js"></script>
+<script type="text/javascript">
+    $(function() {
+
+	createjs.Bitmap.prototype.setWidth = function(w)
+	{       
+	    if (this.image.width == 0) return;
+	    
+	    this.scaleX = w / this.image.width;
+	}
+	    
+	createjs.Bitmap.prototype.setHeight = function(h)
+	{
+	    if (this.image.height == 0) return;
+
+	    this.scaleY = h / this.image.height;
+	}
+
+
+
+	var logContainer = $("#log-container");
+    var log = $("#log");
+    log[0].readOnly = true;
+
+    function appendLog(tag, msg) {
+    	log[0].value += tag+": "+msg + "\n";
+    }
+
+
+    if (!window["WebSocket"]) {
+	alert("WebSocket not supported. Behaviour undefined");
+    }
+
+    appendLog("Main", "Setting up canvas");
+    var canvas = $("#mcanvas")[0];
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    appendLog("Main", "Resized to " + canvas.width + "," + canvas.height);
+
+    appendLog("Generating connection details");
+
+    appendLog("Main", "Initializing jungle");
+    var jungle = new Jungle(new JungleNetConnectionDetails("blake_l@imclueless.co.uk", keccak("Thed@rknesswithin161"), "ws://localhost:12560/ws"), canvas, appendLog);
+    appendLog("Main", "Started...");
+	});
+</script>
+<style type="text/css">
+
+
+html {
+  overflow: hidden;
+  width:  100%;
+  height: 100%;
+  margin: 0px;
+}
+
+body {
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    background: gray;
+}
+
+#log-container {
+    background: white;
+    margin: 0.5em;
+    padding: 0.5em;
+    border: solid 1px;
+    position: absolute;
+    bottom: 1px;
+    width: 99%;
+    height: 20%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#form {
+    padding: 0 0.5em 0 0.5em;
+    margin: 0;
+    bottom: 1em;
+    left: 0px;
+    width: 100%;
+    overflow: hidden;
+}
+
+#msg {
+	width: 90%;
+}
+
+#sub {
+	width: 9%;
+}
+
+#canvas-container {
+	width: 100%;
+	height: 100%;
+}
+
+#mcanvas {
+	width: 100%;
+	height: 100%;
+}
+
+</style>
+</head>
+<body>
+
+<div id="canvas-container" align="center">
+	<canvas id="mcanvas">
+	</canvas>
+</div>
+<div id="log-container">
+<textarea id="log"></textarea></
+</body>
+</html>

@@ -1,0 +1,44 @@
+/**
+ * The JungleMap js class is the clientside representation of the map
+ * @author Blake Loring
+ */
+
+function JungleMap(w, h, tileset) {
+
+	this.tileset = tileset;
+	this.map = this.generate(w, h);
+
+}
+
+JungleMap.prototype.generate(width, height) {
+
+	var container = new createjs.Container();
+
+	container.scaleX = 1.0;
+	container.scaleY = 0.5;
+
+	for (var r = 0; r < 30; r++) {
+
+		var rowOffset = 45 * (r % 2);
+		var yOffset = 45 * r;
+
+		for (var i = 0; i < 15; i++) {
+			
+			mapBits = new createjs.Bitmap(this.tileset);
+
+			mapBits.setWidth(64);
+			mapBits.setHeight(64);
+
+			mapBits.x = 45 + rowOffset + i * 90;
+
+			mapBits.y = yOffset;
+
+			mapBits.rotation = 45.0;
+
+			container.addChild(mapBits);
+		}
+
+	}
+
+	return container;
+}

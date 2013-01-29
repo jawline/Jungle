@@ -1,0 +1,3 @@
+function JungleSound() {
+	this.background = null;	
+}
