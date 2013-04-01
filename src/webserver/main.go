@@ -12,10 +12,13 @@ var addr = flag.String("addr", ":80", "WebServer Service")
 var fileDirectory = ""
 
 func pageHandler(c http.ResponseWriter, req *http.Request) {
+	fmt.Printf("Handle %s\n", req.URL.String())
 
-	path := "home.html"
+	var path string
 
-	if len(req.URL.String()) > 1 {
+	if req.URL.String() == "/" {
+		path = "index.html"
+	} else {
 		path = req.URL.String()[1:]
 	}
 
