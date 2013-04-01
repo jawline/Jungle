@@ -1,5 +1,5 @@
 export GOPATH=$PWD
-mkdir -p bin
+mkdir bin
 cd bin
 go build zoneserver
 go build webserver
