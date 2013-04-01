@@ -1,0 +1,2 @@
+killall webserver
+killall zoneserver
