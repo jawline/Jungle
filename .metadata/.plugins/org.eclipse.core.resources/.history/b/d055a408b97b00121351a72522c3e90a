@@ -1,0 +1,61 @@
+function generateLoadingNode() {
+
+	var loadingNode = new THREE.Object3D();
+
+	var text = new THREE.TextGeometry("Hello World", {
+		size : 20,
+		height : 30,
+		curveSegments : 4,
+		font : "optimer",
+		weight : "bold",
+		style : "normal",
+		bevelThickness : 2,
+		bevelSize : 1.5,
+		bevelEnabled : true,
+		material : 0,
+		extrudeMaterial : 1
+	});
+
+	var material = new THREE.MeshFaceMaterial([new THREE.MeshPhongMaterial({
+		color : 0xffffff,
+		ambient : 0xFFFFFF,
+		emissive : 0xFFFFFF,
+		shading : THREE.FlatShading
+	}), // front
+	new THREE.MeshPhongMaterial({
+		color : 0xffffff,
+		shading : THREE.SmoothShading
+	}) // side
+	]);
+
+	loadingNode.text = text;
+
+	var textMesh = new THREE.Mesh(text, material);
+	textMesh.position.x = -300;
+	textMesh.position.y = -40;
+
+	loadingNode.rot = 0.0;
+
+	loadingNode.mesh = textMesh;
+
+	textMesh.rotation.set(Math.PI / 2, Math.PI / 4, Math.PI / 4);
+	// Set initial rotation
+	textMesh.matrix.setRotationFromEuler(textMesh);
+	// Apply rotation to the object's matrix
+	textMesh.rot += 0.005;
+
+	loadingNode.update = function() {
+		var rotation_matrix = new THREE.Matrix4();
+		rotation_matrix.makeRotationY(.01);
+
+    this.mesh.matrix.multiply(rotation_matrix);
+    this.mesh.rotation.setRotationFromMatrix(mesh.matrix);
+	}
+
+	loadingNode.add(textMesh);
+
+	return loadingNode;
+}
+
+function setLoadingDescription(text) {
+}

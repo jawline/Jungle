@@ -1,0 +1,77 @@
+function Game(container, windowWidth, windowHeight) {
+
+	//Create the new renderer
+	this.renderer = new THREE.WebGLRenderer({
+		antialias : false,
+		clearColor : 0x030303,
+		clearAlpha : 1
+	});
+
+	var renderer = this.renderer;
+
+	container.appendChild(renderer.domElement);
+
+	renderer.gammaInput = true;
+	renderer.gammaOutput = true;
+	renderer.physicallyBasedShading = true;
+
+	renderer.setSize(windowWidth, windowHeight);
+
+	//Setup the scene
+	this.scene = new THREE.Scene();
+	var scene = this.scene;
+
+	scene.fog = new THREE.Fog(0x030303, 10, FAR);
+	scene.fog.color.setHSL(0.75, 0.5, 0.025);
+
+	renderer.setClearColor(scene.fog.color, 1);
+
+	//Create the camera
+	this.camera = new THREE.OrthographicCamera(0, window.innerWidth, window.innerHeight, 0, 0, 10000);
+	this.camera.position.z = 150;
+	
+	//Setup the clock
+	this.clock = new THREE.Clock();
+	this.clock.start();
+
+	return this;
+}
+
+Game.prototype.setLoading = function() {
+	
+	//Create a loading screen
+	this.loading = makeLoadingNode(window.innerWidth, window.innerHeight);
+	this.scene.add(this.loading);
+
+}
+
+Game.prototype.endLoading = function() {
+	
+	if (this.loading) {
+		this.loading.kill();
+	}
+	
+}
+
+var t = 0.0;
+
+Game.prototype.update = function() {
+	var delta = this.clock.getDelta();
+	
+	t += delta;
+	
+	if (this.loading) {
+		this.loading.update(delta);
+	
+		if (t > 5) {
+			//console.log('T');
+			this.loading.kill();
+		}
+	
+	}
+	
+}
+
+Game.prototype.render = function() {
+	this.renderer.render(this.scene, this.camera);
+}

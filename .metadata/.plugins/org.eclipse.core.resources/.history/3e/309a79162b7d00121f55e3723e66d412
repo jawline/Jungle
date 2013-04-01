@@ -1,0 +1,37 @@
+function Game(container, windowWidth, windowHeight) {
+
+	//Create the new renderer
+	this.renderer = new THREE.WebGLRenderer({
+		antialias : false,
+		clearColor : 0x030303,
+		clearAlpha : 1
+	});
+
+	var renderer = this.renderer;
+
+	container.appendChild(renderer.domElement);
+
+	renderer.gammaInput = true;
+	renderer.gammaOutput = true;
+	renderer.physicallyBasedShading = true;
+
+	renderer.setSize(windowWidth, windowHeight);
+
+	//Setup the scene
+	this.scene = new THREE.Scene();
+	var scene = this.scene;
+
+	loading = makeLoadingNode(window.innerWidth, window.innerHeight);
+	scene.add(loading);
+
+	scene.fog = new THREE.Fog(0x030303, 10, FAR);
+	scene.fog.color.setHSL(0.75, 0.5, 0.025);
+
+	renderer.setClearColor(scene.fog.color, 1);
+
+	//Create the camera
+	this.camera = new THREE.OrthographicCamera(0, window.innerWidth, window.innerHeight, 0, 0, 10000);
+	this.camera.position.z = 150;
+
+	return this;
+}

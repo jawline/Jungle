@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - particles</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				background-color: #000000;
+				margin: 0px;
+				overflow: hidden;
+				font-family:Monospace;
+				font-size:13px;
+				text-align:center;
+				font-weight: bold;
+				text-align:center;
+			}
+
+			a {
+				color:#0078ff;
+			}
+
+			#info {
+				color: #fff;
+				position: absolute;
+				top: 0px; width: 100%;
+				padding: 5px;
+				z-index: 100;
+			}
+
+		</style>
+	</head>
+	<body>
+
+		<script src="three.js"></script>
+		<script src="loading.js"></script>
+		<script src="fonts/gentilis_bold.typeface.js"></script>
+		<script src="fonts/gentilis_regular.typeface.js"></script>
+		<script src="fonts/optimer_bold.typeface.js"></script>
+		<script src="fonts/optimer_regular.typeface.js"></script>
+		<script src="fonts/helvetiker_bold.typeface.js"></script>
+		<script src="fonts/helvetiker_regular.typeface.js"></script>
+		<script src="fonts/droid/droid_sans_regular.typeface.js"></script>
+		<script src="fonts/droid/droid_sans_bold.typeface.js"></script>
+		<script src="fonts/droid/droid_serif_regular.typeface.js"></script>
+		<script src="fonts/droid/droid_serif_bold.typeface.js"></script>
+
+
+		<script src="js/Detector.js"></script>
+		<script src="js/libs/stats.min.js"></script>
+
+		<script>
+
+			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+
+			var container, stats;
+			var camera, scene, renderer, particles, geometry, materials = [], parameters, i, h, color;
+			var mouseX = 0, mouseY = 0;
+			var loading;
+
+			var windowHalfX = window.innerWidth / 2;
+			var windowHalfY = window.innerHeight / 2;
+			var clock = new THREE.Clock();
+
+			init();
+			animate();
+
+			function particlePosition(vertex) {
+				vertex.x = Math.random() * 30 - 15;
+				vertex.y = Math.random() * 10 - 5;
+				vertex.z = 900;
+				var velocity = vertex.velocity;
+				velocity.y = Math.sin(Math.random()) * 1000.0 - 500;
+				velocity.x = Math.sin(Math.random()) * 1000.0 - 500;
+				velocity.z = Math.random() * 100;
+				return vertex;
+			}
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				//camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 3000 );
+				camera = new THREE.OrthographicCamera( 0, window.innerWidth, window.innerHeight, 0, 0, 10000 );				
+				camera.position.z = 250;
+
+				scene = new THREE.Scene();
+				scene.fog = new THREE.Fog(0x000000, 0, 100);
+
+				loading = generateLoadingNode(window.innerWidth, window.innerHeight);
+				scene.add(loading);
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild( renderer.domElement );
+
+				stats = new Stats();
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.top = '0px';
+				container.appendChild( stats.domElement );
+
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				document.addEventListener( 'touchstart', onDocumentTouchStart, false );
+				document.addEventListener( 'touchmove', onDocumentTouchMove, false );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function onWindowResize() {
+
+				windowHalfX = window.innerWidth / 2;
+				windowHalfY = window.innerHeight / 2;
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			function onDocumentMouseMove( event ) {
+
+				mouseX = event.clientX - windowHalfX;
+				mouseY = event.clientY - windowHalfY;
+
+			}
+
+			function onDocumentTouchStart( event ) {
+
+				if ( event.touches.length === 1 ) {
+
+					event.preventDefault();
+
+					mouseX = event.touches[ 0 ].pageX - windowHalfX;
+					mouseY = event.touches[ 0 ].pageY - windowHalfY;
+
+				}
+
+			}
+
+			function onDocumentTouchMove( event ) {
+
+				if ( event.touches.length === 1 ) {
+
+					event.preventDefault();
+
+					mouseX = event.touches[ 0 ].pageX - windowHalfX;
+					mouseY = event.touches[ 0 ].pageY - windowHalfY;
+
+				}
+
+			}
+
+			//
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				render();
+				stats.update();
+
+			}
+
+			function render() {
+				var time = Date.now() * 0.00005;
+				var passedTime = clock.getDelta();
+
+				loading.update(passedTime);
+
+				//camera.position.x += ( mouseX - camera.position.x ) * 0.05;
+				//camera.position.y += ( - mouseY - camera.position.y ) * 0.05;
+
+				camera.lookAt( scene.position );
+
+				for ( i = 0; i < scene.children.length; i ++ ) {
+
+					var object = scene.children[ i ];
+
+					if ( object instanceof THREE.ParticleSystem ) {
+
+						var g = object.geometry;
+
+						for (var i = 0; i < g.vertices.length; i++) {
+							g.vertices[i].add(g.vertices[i].velocity.clone().multiplyScalar(passedTime));
+							if (g.vertices[i].z > 10) {
+								particlePosition(g.vertices[i]);
+							}
+						}
+
+						g.verticesNeedUpdate = true;
+						
+
+					}
+
+				}
+
+				for ( i = 0; i < materials.length; i ++ ) {
+
+					color = parameters[i][0];
+
+					h = ( 360 * ( color[0] + time ) % 360 ) / 360;
+					materials[i].color.setHSL( h, color[1], color[2] );
+
+				}
+
+				renderer.render( scene, camera );
+
+			}
+
+
+		</script>
+	</body>
+</html>

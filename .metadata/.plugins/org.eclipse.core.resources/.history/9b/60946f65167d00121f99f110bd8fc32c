@@ -1,0 +1,6 @@
+function Game(container) {
+	
+	
+	
+	return this;
+}

@@ -1,0 +1,161 @@
+function loadingGenerateParticles(windowWidth, windowHeight) {
+
+	geometry = new THREE.Geometry();
+
+	geometry.reposition = function(vertex) {
+		var velocity = vertex.velocity;
+		velocity.x = Math.random() * (windowWidth * 2) - windowWidth;
+		velocity.y = Math.random() * (windowHeight-50) - ((windowHeight-50) / 2);
+		velocity.z = 80 + (Math.random() * 15);
+
+		var veloClone = velocity.clone();
+		//veloClone.z = veloClone.z / 5;
+		var rDelta = Math.random() * 100;
+
+		vertex.x = windowWidth / 2.0;
+		vertex.y = windowHeight / 2.0;
+		vertex.z = -50;
+
+		vertex.add(veloClone.multiplyScalar(rDelta));
+
+		return vertex;
+	}
+	for ( i = 0; i < 1000; i++) {
+
+		var vertex = new THREE.Vector3();
+		vertex.velocity = new THREE.Vector3();
+		geometry.reposition(vertex);
+
+		if (i > 250) {
+			vertex.z = 6;
+		}
+
+		geometry.vertices.push(vertex);
+	}
+
+	var mat = new THREE.ParticleBasicMaterial({
+		size : 3
+	});
+
+	mat.color.setHSV(1, 0.1, 1);
+
+	var particles = new THREE.ParticleSystem(geometry, mat);
+	particles.allDead = false;
+
+	particles.dead = false;
+
+	return particles;
+
+}
+
+/**
+ * Make a loading node containing loading text and the particle emitter
+ */
+
+function makeLoadingNode(message, windowWidth, windowHeight) {
+
+	//Create the text geometry
+	var text = new THREE.TextGeometry(message, {
+		size : 17,
+		height : 50,
+		curveSegments : 8,
+		font : "optimer",
+		weight : "bold",
+		style : "normal",
+		bevelThickness : 8,
+		bevelSize : 3,
+		bevelEnabled : true,
+		material : 0,
+		extrudeMaterial : 1
+	});
+
+	//Create the material for the text
+	var material = new THREE.MeshFaceMaterial([new THREE.MeshBasicMaterial({
+		color : 0xffffff,
+		shading : THREE.FlatShading
+	}), // front
+	new THREE.MeshBasicMaterial({
+		color : 0x000000,
+		shading : THREE.SmoothShading
+	}) // side
+	]);
+
+	//Create the mesh for text and set its position
+	var textMesh = new THREE.Mesh(text, material);
+	textMesh.position.x = 10;
+	textMesh.position.y = 10;
+
+	//Create the container object.
+	var loadingNode = new THREE.Object3D();
+
+	//Add the text mesh to the container object.
+	loadingNode.add(textMesh);
+
+	//Add the particles system to the container.
+	loadingNode.add(loadingGenerateParticles(windowWidth, windowHeight));
+
+	//Setup the kill function so that it marks the particle system as dead and speeds up any remaining particles a bit.
+	//It should also remove the loading text
+	loadingNode.kill = function() {
+
+		this.remove(textMesh);
+
+		for ( i = 0; i < this.children.length; i++) {
+
+			var object = this.children[i];
+
+			if ( object instanceof THREE.ParticleSystem) {
+				object.dead = true;
+			}
+		}
+
+	}
+	//Setup the update function so that the particle system is modified
+	loadingNode.update = function(passedTime) {
+
+		for ( i = 0; i < this.children.length; i++) {
+
+			var object = this.children[i];
+
+			if ( object instanceof THREE.ParticleSystem) {
+
+				var g = object.geometry;
+				object.allDead = true;
+
+				for (var i = 0; i < g.vertices.length; i++) {
+
+					g.vertices[i].add(g.vertices[i].velocity.clone().multiplyScalar(passedTime));
+
+					//If still running recreate the vertex
+					if (g.vertices[i].z > 100) {
+
+						if (!object.dead) {
+							g.reposition(g.vertices[i]);
+						}
+						
+					} else {
+						object.allDead = false;
+					}
+
+				}
+
+				g.verticesNeedUpdate = true;
+			}
+
+		}
+
+	}
+
+	loadingNode.isDead = function() {
+
+		for ( i = 0; i < this.children.length; i++) {
+
+			var object = this.children[i];
+			return object.allDead;
+		}
+
+		return false;
+	}
+
+	return loadingNode;
+}

@@ -1,6 +1,0 @@
-/**
- * The JungleMap is the clientside representation of the map
- */
-
-function JungleMap() {
-}

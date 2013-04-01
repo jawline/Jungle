@@ -1,0 +1,52 @@
+function generateLoadingNode() {
+
+	var loadingNode = new THREE.Object3D();
+
+	var text = new THREE.TextGeometry("Loading...", {
+		size : 15,
+		height : 20,
+		curveSegments : 4,
+		font : "optimer",
+		weight : "bold",
+		style : "normal",
+		bevelThickness : 2,
+		bevelSize : 1.5,
+		bevelEnabled : true,
+		material : 0,
+		extrudeMaterial : 1
+	});
+
+	var material = new THREE.MeshFaceMaterial([new THREE.MeshPhongMaterial({
+		color : 0xffffff,
+		ambient : 0xFFFFFF,
+		emissive : 0xFFFFFF,
+		shading : THREE.FlatShading
+	}), // front
+	new THREE.MeshPhongMaterial({
+		color : 0xffffff,
+		shading : THREE.SmoothShading
+	}) // side
+	]);
+
+	loadingNode.text = text;
+
+	var textMesh = new THREE.Mesh(text, material);
+	textMesh.position.x = 200;
+	textMesh.position.y = 100;
+	(new THREE.Projector()).projectVector( textMesh.position, camera);
+	console.log(textMesh);
+
+	loadingNode.rot = 0.0;
+
+	loadingNode.mesh = textMesh;
+
+	loadingNode.update = function() {
+	}
+
+	loadingNode.add(textMesh);
+
+	return loadingNode;
+}
+
+function setLoadingDescription(text) {
+}

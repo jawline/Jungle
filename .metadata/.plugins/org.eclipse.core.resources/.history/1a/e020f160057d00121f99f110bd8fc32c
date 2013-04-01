@@ -1,0 +1,139 @@
+function loadingGenerateParticles(windowWidth, windowHeight) {
+
+	geometry = new THREE.Geometry();
+
+	geometry.reposition = function(vertex) {
+		var velocity = vertex.velocity;
+		velocity.x = Math.random() * windowWidth - (windowWidth / 2);
+		velocity.y = Math.random() * windowHeight - (windowHeight / 2);
+		velocity.z = 20 + (Math.random() * 30);
+
+		var veloClone = velocity.clone();
+		//veloClone.z = veloClone.z / 5;
+		var rDelta = Math.random() * 100;
+
+		vertex.x = windowWidth / 2.0;
+		vertex.y = windowHeight / 2.0;
+		vertex.z = -50;
+
+		vertex.add(veloClone.multiplyScalar(rDelta));
+
+		return vertex;
+	}
+	for ( i = 0; i < 750; i++) {
+
+		var vertex = new THREE.Vector3();
+		vertex.velocity = new THREE.Vector3();
+		geometry.reposition(vertex);
+
+		if (i > 250) {
+			vertex.z = 6;
+		}
+
+		geometry.vertices.push(vertex);
+	}
+
+	var mat = new THREE.ParticleBasicMaterial({
+		size : 3
+	});
+
+	mat.color.setHSV(1, 0.1, 1);
+
+	var particles = new THREE.ParticleSystem(geometry, mat);
+
+	particles.dead = false;
+
+	return particles;
+
+}
+
+function generateLoadingNode(windowWidth, windowHeight) {
+
+	var loadingNode = new THREE.Object3D();
+
+	var text = new THREE.TextGeometry("Loading...", {
+		size : 20,
+		height : 30,
+		curveSegments : 4,
+		font : "optimer",
+		weight : "bold",
+		style : "normal",
+		bevelThickness : 2,
+		bevelSize : 1.5,
+		bevelEnabled : true,
+		material : 0,
+		extrudeMaterial : 1
+	});
+
+	var material = new THREE.MeshFaceMaterial([new THREE.MeshBasicMaterial({
+		color : 0xffffff,
+		shading : THREE.FlatShading
+	}), // front
+	new THREE.MeshPhongMaterial({
+		color : 0xffffff,
+		shading : THREE.SmoothShading
+	}) // side
+	]);
+
+	loadingNode.text = text;
+
+	var textMesh = new THREE.Mesh(text, material);
+	textMesh.position.x = 10;
+	textMesh.position.y = 10;
+	loadingNode.add(textMesh);
+
+	loadingNode.add(loadingGenerateParticles(windowWidth, windowHeight));
+
+	loadingNode.kill = function() {
+
+		for ( i = 0; i < this.children.length; i++) {
+
+			var object = this.children[i];
+
+			if ( object instanceof THREE.ParticleSystem) {
+				object.dead = true;
+
+				var g = object.geometry;
+
+				for (var i = 0; i < g.vertices.length; i++) {
+					g.vertices[i].velocity.z += 50;
+				}
+
+			}
+		}
+
+	}
+
+	loadingNode.update = function(passedTime) {
+
+		for ( i = 0; i < this.children.length; i++) {
+
+			var object = this.children[i];
+
+			if ( object instanceof THREE.ParticleSystem) {
+
+				var g = object.geometry;
+
+				for (var i = 0; i < g.vertices.length; i++) {
+
+					g.vertices[i].add(g.vertices[i].velocity.clone().multiplyScalar(passedTime));
+
+					if (!object.dead) {
+
+						if (g.vertices[i].z > 0) {
+							g.reposition(g.vertices[i]);
+						}
+
+					}
+
+				}
+
+				g.verticesNeedUpdate = true;
+			}
+
+		}
+
+	}
+
+	return loadingNode;
+}

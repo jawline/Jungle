@@ -1,0 +1,186 @@
+function Game(container, windowWidth, windowHeight) {
+
+	//Create the new renderer
+	this.renderer = new THREE.WebGLRenderer({
+		antialias : true,
+		clearColor : 0x030303,
+		clearAlpha : 1
+	});
+
+	var renderer = this.renderer;
+
+	container.appendChild(renderer.domElement);
+
+	renderer.gammaInput = true;
+	renderer.gammaOutput = true;
+	renderer.physicallyBasedShading = true;
+
+	renderer.setSize(windowWidth, windowHeight);
+
+	//Setup the scene
+	this.scene = new THREE.Scene();
+	var scene = this.scene;
+
+	scene.fog = new THREE.Fog(0x030303, 10, FAR);
+	scene.fog.color.setHSL(0.75, 0.5, 0.025);
+
+	renderer.setClearColor(scene.fog.color, 1);
+
+	//Create the camera
+	this.camera = new THREE.OrthographicCamera(0, window.innerWidth, window.innerHeight, 0, 0, 10000);
+	this.camera.position.z = 150;
+
+	//Setup the clock
+	this.clock = new THREE.Clock();
+	this.clock.start();
+
+	return this;
+}
+
+Game.prototype.setLoading = function() {
+
+	//Create a loading screen
+	this.loading = makeLoadingNode("Calibrating FTL...", window.innerWidth, window.innerHeight);
+	this.scene.add(this.loading);
+
+}
+
+Game.prototype.endLoading = function() {
+
+	//Remove the loading screen
+	if (this.loading) {
+		this.loading.kill();
+	}
+
+}
+/**
+ * Temp function to setup the game scene
+ */
+Game.prototype.testSetup = function() {
+
+	console.log('Test setup called');
+
+	this.camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, FAR);
+	this.camera.position.z = 15000;
+	this.camera.position.y = 80;
+	this.camera.lookAt(new THREE.Vector3(0,0,0))
+
+	var geometry = new THREE.Geometry();
+
+	for ( i = 0; i < 4000; i++) {
+
+		var vertex = new THREE.Vector3();
+
+		vertex.x = Math.random() * 4000 - 2000;
+		vertex.y = Math.random() * 4000 - 2000;
+		vertex.z = Math.random() * 4000 - 2000;
+
+		geometry.vertices.push(vertex);
+
+	}
+
+	var objectMaterial = new THREE.ParticleBasicMaterial({
+		size : 2
+	});
+
+	objectMaterial.shading = THREE.NoShading;
+
+	particles = new THREE.ParticleSystem(geometry, objectMaterial);
+	this.scene.add(particles);
+
+	var objectMaterial = new THREE.MeshPhongMaterial({
+		color : 0x000000,
+		ambient : 0x111111,
+		specular : 0xffffff,
+		metal : true
+	});
+
+	var scene = this.scene;
+
+	var loader = new THREE.JSONLoader();
+	loader.load("obj/ship2.js", function(geometry) {
+
+		var mesh = new THREE.Mesh(geometry, objectMaterial);
+
+		mesh.position.x = 0;
+		mesh.position.y = 0;
+		mesh.position.z = 0;
+
+		mesh.scale.multiplyScalar(4);
+
+		scene.add(mesh);
+
+		for (var i = 0; i < 30; i++) {
+
+			mesh = new THREE.Mesh(geometry, objectMaterial);
+
+			mesh.position.x = Math.random() * 500 - 250;
+			mesh.position.y = Math.random() * 500 - 250;
+			mesh.position.z = Math.random() * 500 - 250;
+
+			mesh.scale.multiplyScalar(4);
+
+			scene.add(mesh);
+
+			//var l = new THREE.PointLight( 0xffffff, 1, 200 );
+			//scene.add( l );
+
+		}
+
+	});
+
+	var intensity = 4.5;
+	var distance = 1300;
+	var c1 = 0xff0040, c2 = 0x0040ff, c3 = 0x80ff80, c4 = 0xffaa00, c5 = 0x00ffaa, c6 = 0xff1100;
+	//var c1 = 0xffffff, c2 = 0xffffff, c3 = 0xffffff, c4 = 0xffffff, c5 = 0xffffff, c6 = 0xffffff;
+
+	var light1 = new THREE.PointLight(c1, intensity, distance);
+	light1.position.x = Math.random() * 300 - 150;
+	light1.position.y = Math.random() * 300 - 150;
+	this.scene.add(light1);
+
+	this.tt = true;
+
+}
+var t = 0.0;
+
+Game.prototype.update = function() {
+	var delta = this.clock.getDelta();
+
+	t += delta;
+
+	if (this.loading) {
+		this.loading.update(delta);
+
+		if (this.loading.isDead()) {
+			this.scene.remove(this.loading);
+			delete this.loading;
+			this.testSetup();
+			return;
+		}
+
+		if (t > 4) {
+			this.loading.kill();
+		}
+
+	}
+
+	if (this.tt) {
+
+		if (this.camera.position.z > 250) {
+
+			var distance = this.camera.position.z / 10.0;
+			var delta = delta * 5;
+			distance = distance * (delta);
+			this.camera.position.z = this.camera.position.z - distance;
+			t += delta;
+
+		}
+
+	}
+
+}
+
+Game.prototype.render = function() {
+	this.renderer.render(this.scene, this.camera);
+}

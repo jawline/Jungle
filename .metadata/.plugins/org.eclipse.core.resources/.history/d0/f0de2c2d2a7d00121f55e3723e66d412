@@ -1,0 +1,17 @@
+function Game(container, windowWidth, windowHeight) {
+
+	//
+	this.renderer = new THREE.WebGLRenderer({
+		antialias : false,
+		clearColor : 0x030303,
+		clearAlpha : 1
+	});
+
+	var renderer = this.renderer;
+
+	renderer.setSize(window.innerWidth, window.innerHeight);
+	
+	renderer.setClearColor(scene.fog.color, 1);
+
+	return this;
+}
